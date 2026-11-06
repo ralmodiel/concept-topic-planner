@@ -27,12 +27,7 @@ import {
 } from './plan.ts'
 
 const GREY = '5C5A5C'
-const head = (text: string) =>
-  para(run(text, { bold: true, size: 13, color: '7B1113' }), {
-    before: 12,
-    after: 4,
-    keepNext: true,
-  })
+const head = (text: string) => para(run(text), { style: 'Heading2', before: 12, after: 4 })
 /** The text as runs with a break at each new line: Word shows a bare newline in a run as nothing. */
 const runs = (text: string, o?: Parameters<typeof run>[1]) =>
   text
@@ -71,7 +66,7 @@ export function planDocx(p: Plan, today = new Date()): Uint8Array {
   const v = verdict(f)
   const c = criteria(p)
   const body: string[] = []
-  body.push(para(run('Topic plan', { bold: true, size: 20, color: '7B1113' }), { after: 2 }))
+  body.push(para(run('Topic plan'), { style: 'Heading1', after: 2 }))
   body.push(
     para(
       run(
@@ -95,9 +90,10 @@ export function planDocx(p: Plan, today = new Date()): Uint8Array {
   body.push(head('Eligibility criteria'))
   body.push(para(run('Include', { bold: true }), { after: 2, keepNext: true }))
   for (const t of c.include.length ? c.include : ['(not yet set)']) body.push(dash(t))
-  body.push(para(run('Exclude', { bold: true }), { before: 4, after: 2, keepNext: true }))
-  for (const t of c.exclude.length ? c.exclude : ['Studies that do not meet the criteria above'])
-    body.push(dash(t))
+  // (none written, none said: "studies that do not meet the criteria" goes round in a circle)
+  if (c.exclude.length)
+    body.push(para(run('Exclude', { bold: true }), { before: 4, after: 2, keepNext: true }))
+  for (const t of c.exclude) body.push(dash(t))
 
   body.push(head('Search'))
   body.push(line(searchString(p) || '(not yet written)', { label: 'Search string' }))

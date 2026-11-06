@@ -1,4 +1,4 @@
-// The page: header and notice, the Topic planner, its questions and the footer.
+// The page: header and notice, the Topic Planner, its questions and the footer.
 import { Component, type ReactNode } from 'react'
 import { clearPlans } from './topic/store'
 import Faq from './components/Faq'
@@ -18,7 +18,7 @@ class TopicBoundary extends Component<{ children: ReactNode }, { failed: boolean
     if (!this.state.failed) return this.props.children
     return (
       <p role="alert" className="py-10 text-sm leading-relaxed text-ink-2">
-        The Topic planner could not be shown.{' '}
+        The Topic Planner could not be shown.{' '}
         <button
           type="button"
           onClick={() => {

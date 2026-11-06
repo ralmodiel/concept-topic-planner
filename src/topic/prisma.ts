@@ -1,6 +1,6 @@
 // The PRISMA 2020 checklists in their own words: the 27 items (42 with their parts) of the main
 // checklist and the 12 of PRISMA 2020 for Abstracts, as the PRISMA site publishes them under
-// CC BY 4.0. The Topic planner shows them, drafts what it can, and writes them into the plan.
+// CC BY 4.0. The Topic Planner shows them, drafts what it can, and writes them into the plan.
 
 export interface PrismaItem {
   id: string

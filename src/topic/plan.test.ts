@@ -1,4 +1,4 @@
-// The Topic planner's sums and sentences: the question from its parts, the search string, the
+// The Topic Planner's sums and sentences: the question from its parts, the search string, the
 // PRISMA flow numbers and the verdict on the topic's size, and the plan as a Word file.
 import { strFromU8, unzipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
@@ -143,6 +143,17 @@ describe('topic plan', () => {
       head: 'Check the numbers',
       body: 'More records are removed than were identified.',
     })
+    // The counts below a wrong one are taken from nothing: only the first, the root, is named.
+    const cascade = flow(
+      plan({
+        sources: { eric: { on: true, found: '10' } },
+        duplicates: '12',
+        screenedOut: '5',
+        notRetrieved: '1',
+        studies: '2',
+      }),
+    )
+    expect(cascade.problems).toEqual(wrong.problems)
     const more = flow(
       plan({ sources: { eric: { on: true, found: '10' } }, screenedOut: '5', studies: '7' }),
     )
@@ -309,6 +320,14 @@ describe('topic plan', () => {
     expect(xml).toContain('Location where item is reported')
     expect(xml).toContain('Identify the report as a systematic review.')
     expect(xml).toContain('METHODS: Eligibility criteria')
+    // Section titles are Word headings, in a style of the file, not bold runs only.
+    const heads = [...doc.getElementsByTagName('w:pStyle')]
+      .filter((s) => s.getAttribute('w:val') === 'Heading2')
+      .map((s) => s.parentNode!.parentNode!.textContent)
+    expect(heads).toContain('Eligibility criteria')
+    expect(strFromU8(files['word/styles.xml'])).toContain(
+      '<w:style w:type="paragraph" w:styleId="Heading2">',
+    )
     // A line break typed in a field is a break in Word, not a newline it would ignore.
     const broken = planDocx({ ...EXAMPLE, rationale: 'First.\nSecond.' })
     const two = strFromU8(unzipSync(broken)['word/document.xml'])

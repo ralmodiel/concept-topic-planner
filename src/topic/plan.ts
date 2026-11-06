@@ -1,4 +1,4 @@
-// The topic plan a student builds in the Topic planner, and what follows from it: the
+// The topic plan a student builds in the Topic Planner, and what follows from it: the
 // question, working title and objective put together from their words, the search string, the
 // PRISMA 2020 flow numbers and what they say about the topic's size. The page, the Word file and
 // the tests all read these; nothing here touches the page or the network.
@@ -301,7 +301,7 @@ export const blank = (): Plan => ({
   abstract: {},
 })
 
-/** A finished example, invented for the tab's "Try an example". */
+/** A finished example, invented for the page's "Try an example". */
 export const EXAMPLE: Plan = {
   ...blank(),
   interest: 'Games in online classes',
@@ -566,8 +566,8 @@ export interface Flow {
   studies: number
   /** Screening has begun: a number of records excluded is given. */
   screening: boolean
-  /** Numbers that cannot all be right (more taken away than there was), each with the field
-   *  group it concerns. */
+  /** The first number that cannot be right (more taken away than there was), with the field
+   *  group it concerns; the numbers below it follow from it. */
   problems: {
     about: 'removed' | 'screenedOut' | 'notRetrieved' | 'reasons' | 'studies'
     text: string
@@ -584,8 +584,9 @@ export function flow(p: Plan): Flow {
   const identified = databases + registers
   const removed = num(p.duplicates) + num(p.automation) + num(p.removed)
   const problems: Flow['problems'] = []
+  // (past the first, a count is taken from nothing: only that first, the root, is named)
   const less = (a: number, b: number, about: Flow['problems'][number]['about'], text: string) => {
-    if (b > a) problems.push({ about, text })
+    if (b > a && !problems.length) problems.push({ about, text })
     return Math.max(0, a - b)
   }
   const screened = less(
@@ -619,7 +620,7 @@ export function flow(p: Plan): Flow {
     'More reports are excluded than were assessed.',
   )
   const studies = given(p.studies) ? num(p.studies) : reports
-  if (studies > reports)
+  if (studies > reports && !problems.length)
     problems.push({ about: 'studies', text: 'More studies than reports of them.' })
   return {
     bySource,
@@ -910,7 +911,7 @@ function entries<T>(v: unknown, known: Set<string>, take: (x: unknown) => T | un
 }
 
 /** A plan from whatever was saved: each field is taken only in the shape the page expects, so a
- *  damaged or tampered entry cannot break the tab, and the rest starts blank. */
+ *  damaged or tampered entry cannot break the page, and the rest starts blank. */
 export function sane(raw: unknown): Plan {
   const b = blank()
   if (!isObj(raw)) return b

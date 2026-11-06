@@ -1,4 +1,4 @@
-// The Topic planner: a student shapes a systematic-review topic in five steps (Question,
+// The Topic Planner: a student shapes a systematic-review topic in five steps (Question,
 // Criteria, Search, Screen, Plan). The question is written as a sentence that fills in as its
 // parts are typed; the search string, the PRISMA 2020 flow and a verdict on the topic's size
 // follow from the entries; the last step is the PRISMA 2020 checklist, downloadable as Word.
@@ -79,6 +79,7 @@ import {
   TYPES,
   verdict,
   workingTitle,
+  yearNote,
   type Element,
   type Flow,
   type Kind,
@@ -107,6 +108,7 @@ const STEP_NAMES: Record<Step, { name: string; hint: string }> = {
 }
 
 // (a width goes with each use: the narrow ones must not carry w-full as well)
+// (a field in error takes border-fix!: border-line comes later in the stylesheet and would win)
 const FIELD =
   'rounded-field border border-line bg-surface px-3.5 text-ink shadow-(--shadow-elev-1) transition-[border-color,box-shadow] placeholder:text-ink-3 hover:border-ink-3/50 focus-visible:border-maroon focus-visible:outline-offset-0'
 const INPUT = `h-11 w-full ${FIELD}`
@@ -777,7 +779,7 @@ function Reviewed({ plan, patch }: { plan: Plan; patch: Patch }) {
     : []
   return (
     <div className={CARD}>
-      <h3 className="font-semibold text-ink">Has it been reviewed already?</h3>
+      <h2 className="font-semibold text-ink">Has it been reviewed already?</h2>
       <p className={HINT}>
         Look for reviews on your question before you commit to it: a recent one may have settled it,
         or left a gap yours can fill. PROSPERO lists reviews under way, not yet published.
@@ -895,6 +897,11 @@ function ElementField({ e, plan, patch, ai }: { e: Element; plan: Plan; patch: P
 
 function CriteriaStep({ plan, patch }: { plan: Plan; patch: Patch }) {
   const kind = KINDS[plan.kind]
+  const note = yearNote(plan)
+  // (the year wrong on its own, or both when they are the wrong way round)
+  const alone = (y: string) => !!yearNote({ ...plan, from: y, to: '' })
+  const off = (y: string) =>
+    note && (alone(y) || !(alone(plan.from) || alone(plan.to))) ? true : undefined
   return (
     <div className="space-y-8">
       <fieldset>
@@ -906,8 +913,10 @@ function CriteriaStep({ plan, patch }: { plan: Plan; patch: Patch }) {
           <input
             aria-label="From year"
             inputMode="numeric"
-            className={`h-11 w-28 ${FIELD}`}
+            className={`h-11 w-28 ${FIELD} ${off(plan.from) ? 'border-fix!' : ''}`}
             value={plan.from}
+            aria-invalid={off(plan.from)}
+            aria-describedby={off(plan.from) && 'years-note'}
             onChange={(e) => patch({ from: e.target.value })}
             placeholder="2015"
           />
@@ -915,12 +924,19 @@ function CriteriaStep({ plan, patch }: { plan: Plan; patch: Patch }) {
           <input
             aria-label="To year"
             inputMode="numeric"
-            className={`h-11 w-28 ${FIELD}`}
+            className={`h-11 w-28 ${FIELD} ${off(plan.to) ? 'border-fix!' : ''}`}
             value={plan.to}
+            aria-invalid={off(plan.to)}
+            aria-describedby={off(plan.to) && 'years-note'}
             onChange={(e) => patch({ to: e.target.value })}
             placeholder={String(new Date().getFullYear())}
           />
         </div>
+        {note && (
+          <p id="years-note" className="mt-1.5 text-[0.8125rem] font-medium text-fix">
+            {note}
+          </p>
+        )}
       </fieldset>
       <Pills
         label="Languages"
@@ -966,6 +982,7 @@ function CriteriaStep({ plan, patch }: { plan: Plan; patch: Patch }) {
               className={AREA}
               value={plan.include}
               onChange={(e) => patch({ include: e.target.value })}
+              placeholder={'e.g. Studies that report a measure of engagement'}
             />
           )}
         </Field>
@@ -1005,7 +1022,7 @@ function SearchStep({ plan, patch }: { plan: Plan; patch: Patch }) {
       <div className={CARD}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h3 className="font-semibold text-ink">Your search string</h3>
+            <h2 className="font-semibold text-ink">Your search string</h2>
             <p className={HINT}>
               Each part's words joined by OR, the parts by AND. Untick a part to leave it out.
               PubMed, Scopus and Web of Science read it in their own syntax: copy theirs from their
@@ -1036,9 +1053,9 @@ function SearchStep({ plan, patch }: { plan: Plan; patch: Patch }) {
                 onChange={(ev) =>
                   patch((p) => ({ searched: { ...p.searched, [e.id]: ev.target.checked } }))
                 }
-                className="mt-1 size-4 accent-maroon"
+                className="mt-0.5 size-5 shrink-0 accent-maroon"
               />
-              <label htmlFor={`search-${e.id}`} className="min-w-0">
+              <label htmlFor={`search-${e.id}`} className="min-w-0 py-0.5">
                 <span className="font-semibold text-ink">{e.name}</span>
                 <span className="block text-ink-2">
                   {termsOf(plan, e.id).join(' · ') || (
@@ -1071,11 +1088,12 @@ function SearchStep({ plan, patch }: { plan: Plan; patch: Patch }) {
                     type="checkbox"
                     checked={!!log.on}
                     onChange={(e) => set({ on: e.target.checked })}
-                    className="size-4 accent-maroon"
+                    className="size-5 shrink-0 accent-maroon"
                   />
-                  <label htmlFor={`src-${src.id}`} className="min-w-0 flex-1">
+                  {/* (never narrower than this: on a phone the buttons go below the name instead) */}
+                  <label htmlFor={`src-${src.id}`} className="min-w-48 flex-1 py-0.5">
                     <span className="font-semibold text-ink">{src.name}</span>
-                    <span className="ml-2 text-sm text-ink-3">{src.note}</span>
+                    <span className="block text-sm text-ink-3">{src.note}</span>
                   </label>
                   {s && (searchFor(plan, src.id) !== s || !src.url) && (
                     <Copy text={searchFor(plan, src.id)} label="Copy" />
@@ -1107,7 +1125,7 @@ function SearchStep({ plan, patch }: { plan: Plan; patch: Patch }) {
                       <span className="text-ink-2">Records found</span>
                       <input
                         inputMode="numeric"
-                        className={`${INPUT} mt-1 ${bad.includes(`source:${src.id}`) ? 'border-fix' : ''}`}
+                        className={`${INPUT} mt-1 ${bad.includes(`source:${src.id}`) ? 'border-fix!' : ''}`}
                         value={log.found ?? ''}
                         aria-invalid={bad.includes(`source:${src.id}`) || undefined}
                         aria-describedby={
@@ -1189,7 +1207,7 @@ const Num = ({
         <input
           id={id}
           inputMode="numeric"
-          className={`${INPUT} ${problem ? 'border-fix' : ''}`}
+          className={`${INPUT} ${problem ? 'border-fix!' : ''}`}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           aria-invalid={problem ? true : undefined}
@@ -1285,10 +1303,11 @@ function ScreenStep({ plan, patch, f }: { plan: Plan; patch: Patch; f: Flow }) {
         )}
         <ul className="mt-2 space-y-2">
           {plan.reasons.map((r, k) => (
-            <li key={k} className="flex gap-2">
+            // (on a phone the reason takes its own row: beside the count it is too narrow to read)
+            <li key={k} className="flex flex-wrap gap-2 sm:flex-nowrap">
               <input
                 aria-label={`Reason ${k + 1}`}
-                className={`h-11 min-w-0 flex-1 ${FIELD}`}
+                className={`h-11 w-full min-w-0 sm:w-auto sm:flex-1 ${FIELD}`}
                 value={r.why}
                 onChange={(e) => setReason(k, { why: e.target.value })}
                 list="reasons"
@@ -1296,7 +1315,7 @@ function ScreenStep({ plan, patch, f }: { plan: Plan; patch: Patch; f: Flow }) {
               <input
                 aria-label={`Count for reason ${k + 1}`}
                 inputMode="numeric"
-                className={`h-11 w-24 ${FIELD} ${bad.includes(`reason:${k}`) ? 'border-fix' : ''}`}
+                className={`h-11 w-24 ${FIELD} ${bad.includes(`reason:${k}`) ? 'border-fix!' : ''}`}
                 value={r.n}
                 aria-invalid={bad.includes(`reason:${k}`) || undefined}
                 onChange={(e) => setReason(k, { n: e.target.value })}
@@ -1489,7 +1508,7 @@ function FlowDiagram({ f }: { f: Flow }) {
   )
 }
 
-function Verdict({ f }: { f: Flow }) {
+function Verdict({ f, onFix }: { f: Flow; onFix?: () => void }) {
   const v = verdict(f)
   const { icon: Icon, tone } = STATUS[v.tone]
   return (
@@ -1504,11 +1523,15 @@ function Verdict({ f }: { f: Flow }) {
       </span>
       <p className="mt-3 font-display text-2xl leading-tight text-ink">{v.head}</p>
       <p className="mt-1.5 text-sm leading-relaxed text-ink-2">{v.body}</p>
-      {f.problems.map((x) => (
-        <p key={x.about} className="mt-2 text-sm font-medium text-fix">
-          {x.text}
-        </p>
-      ))}
+      {f.problems.length > 0 && onFix && (
+        <button
+          type="button"
+          onClick={onFix}
+          className={`mt-2 cursor-pointer text-sm font-medium text-fix ${LINK}`}
+        >
+          Fix it in step 4
+        </button>
+      )}
     </div>
   )
 }
@@ -1561,7 +1584,7 @@ const ChecklistRow = memo(function ChecklistRow({
       data-print="avoid-break"
       className="grid scroll-mt-36 gap-x-4 gap-y-2 p-4 md:grid-cols-[3rem_1fr_14rem]"
     >
-      {first && <h3 className="font-display text-lg text-maroon md:col-span-3">{i.section}</h3>}
+      {first && <h2 className="font-display text-lg text-maroon md:col-span-3">{i.section}</h2>}
       <span className="font-display text-xl text-ink-3 tabular-nums">{itemNumber(i.id)}</span>
       <div className="min-w-0">
         <p className="text-sm font-semibold text-ink">{i.topic}</p>
@@ -1889,7 +1912,7 @@ function Candidates({
   )
 }
 
-// ---- The tab ----
+// ---- The page ----
 
 export default function Topic() {
   const [kept, setKept] = useState(loadPlans)
@@ -2185,7 +2208,7 @@ export default function Topic() {
                 </dd>
               </dl>
             </div>
-            <Verdict f={f} />
+            <Verdict f={f} onFix={step === 'screen' ? undefined : () => go('screen')} />
             <Candidates
               plans={plans}
               current={current}

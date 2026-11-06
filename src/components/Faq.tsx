@@ -13,7 +13,7 @@ const QA: { id?: string; q: string; a: React.ReactNode; open?: boolean }[] = [
   },
   {
     id: 'faq-topic',
-    q: 'What does the Topic planner do?',
+    q: 'What does the Topic Planner do?',
     a: (
       <>
         <p>
@@ -55,7 +55,7 @@ const QA: { id?: string; q: string; a: React.ReactNode; open?: boolean }[] = [
   },
   {
     id: 'faq-ai',
-    q: 'What is the AI helper in the Topic planner?',
+    q: 'What is the AI helper in the Topic Planner?',
     a: (
       <>
         <p>
