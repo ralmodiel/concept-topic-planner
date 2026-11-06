@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+*.local
+*.log
+*.db
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Local tooling and session state, never committed
+.aix/
+.claude/
+.scratch/
+tmp/

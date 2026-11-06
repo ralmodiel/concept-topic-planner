@@ -1,0 +1,77 @@
+// The maroon band that closes the page: the notice, the references, and the project's own
+// licences.
+import { NOTICE, PRIVATE_SHORT } from '../notice'
+
+const LINK =
+  'text-on-band underline decoration-on-band/40 underline-offset-4 transition-[text-decoration-color] hover:decoration-band-gold'
+const HEADING = 'text-xs font-semibold tracking-[0.08em] text-band-gold uppercase'
+
+// Only a real https URL becomes a link.
+const REPO_RAW = import.meta.env.VITE_REPO_URL as string | undefined
+const REPO = /^https:\/\/\S+$/.test(REPO_RAW ?? '') ? REPO_RAW : undefined
+
+export default function Footer() {
+  const base = import.meta.env.BASE_URL
+  return (
+    <footer
+      className="mt-16 bg-band-maroon bg-(image:--gradient-band) text-sm text-on-band band-focus"
+      data-print="hide"
+    >
+      <div className="mx-auto grid max-w-6xl gap-10 px-(--gutter) py-12 md:grid-cols-3 md:gap-8">
+        <section aria-labelledby="f-about">
+          <h2 id="f-about" className={HEADING}>
+            Unofficial proof of concept
+          </h2>
+          <p className="mt-3 leading-relaxed text-on-band/90">{NOTICE}</p>
+        </section>
+        <section aria-labelledby="f-refs">
+          <h2 id="f-refs" className={HEADING}>
+            References
+          </h2>
+          <ul className="mt-3 space-y-2.5">
+            <li>
+              <a
+                className={LINK}
+                href="https://www.prisma-statement.org/prisma-2020-checklist"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                PRISMA 2020 checklist
+              </a>
+            </li>
+          </ul>
+        </section>
+        <section aria-labelledby="f-project">
+          <h2 id="f-project" className={HEADING}>
+            This project
+          </h2>
+          <ul className="mt-3 space-y-2.5">
+            <li className="text-on-band/90">{PRIVATE_SHORT}</li>
+            <li className="text-on-band/75">No accounts, cookies or analytics.</li>
+            <li className="text-on-band/75">Code: MIT License</li>
+            <li>
+              <a className={LINK} href={`${base}THIRD_PARTY_LICENSES.txt`}>
+                Third-party licenses
+              </a>
+            </li>
+            {REPO && (
+              <li>
+                <a className={LINK} href={REPO} target="_blank" rel="noopener noreferrer">
+                  View source
+                </a>
+              </li>
+            )}
+          </ul>
+        </section>
+      </div>
+      <div className="border-t border-on-band/15 bg-black/10">
+        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-(--gutter) py-5 text-xs text-on-band/80 sm:flex-row sm:items-center sm:justify-between">
+          <p className="font-display text-lg leading-none text-on-band">
+            Topic <span className="text-band-gold">Planner</span>
+          </p>
+          <p>Unofficial proof of concept · beta testing</p>
+        </div>
+      </div>
+    </footer>
+  )
+}
